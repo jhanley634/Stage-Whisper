@@ -1,5 +1,6 @@
 import os
 import warnings
+from pathlib import Path
 
 import rich_click as click
 import torch
@@ -46,10 +47,7 @@ from whisper.utils import write_vtt
 @click.option(
     "--verbose",
     "-v",
-    type=bool,
-    required=False,
-    default=True,
-    show_default=True,
+    is_flag=True,
     help="Whether to print out the progress and debug messages",
 )
 @click.option(
@@ -72,7 +70,7 @@ from whisper.utils import write_vtt
     type=str,
     help="Language spoken in the audio, specify 'None' to perform language detection",
 )
-def cli(input, model, device, output_dir, verbose, task, language):
+def cli(in_file, model, device, output_dir, verbose, task, language):
     """
     Command line interface for Stage Whisper Python component.
     Uses the whisper package to transcribe and translate audio files,
@@ -90,17 +88,16 @@ def cli(input, model, device, output_dir, verbose, task, language):
         language = "en"
 
     loaded_model = whisper.load_model(model, device=device)
-    result = loaded_model.transcribe(input)
+    result = loaded_model.transcribe(in_file, language=language, verbose=verbose)
 
-    audio_basename = os.path.basename(input)
+    audio_basename = Path(in_file).name
+    out_file = Path(output_dir) / f"{audio_basename}.vtt"
     # # save TXT
     # with open(os.path.join(output_dir, audio_basename + ".txt"), "w", encoding="utf-8") as txt:
     #     print(result["text"], file=txt)
 
     # save VTT
-    with open(
-        os.path.join(output_dir, f"{audio_basename}.vtt"), "w", encoding="utf-8"
-    ) as vtt:
+    with open(out_file, "w", encoding="utf-8") as vtt:
         write_vtt(result["segments"], file=vtt)
 
     print(result["text"])
