@@ -76,19 +76,19 @@ def cli(input, model, device, output_dir, verbose, task, language):
     if model.endswith(".en") and language != "en":
         warnings.warn(f"{model} is an English-only model but '{language}' was selected; using English instead.")
         language = "en"
-    
+
     loaded_model = whisper.load_model(model, device=device)
     result = loaded_model.transcribe(input)
-    
+
     audio_basename = os.path.basename(input)
     # # save TXT
     # with open(os.path.join(output_dir, audio_basename + ".txt"), "w", encoding="utf-8") as txt:
     #     print(result["text"], file=txt)
 
     # save VTT
-    with open(os.path.join(output_dir, audio_basename + ".vtt"), "w", encoding="utf-8") as vtt:
+    with open(os.path.join(output_dir, f"{audio_basename}.vtt"), "w", encoding="utf-8") as vtt:
         write_vtt(result["segments"], file=vtt)
-    
+
     print(result["text"])
 
 
